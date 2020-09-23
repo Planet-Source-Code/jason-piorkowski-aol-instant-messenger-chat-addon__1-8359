@@ -1,0 +1,2510 @@
+Attribute VB_Name = "ItchyBallBatch"
+
+
+
+Option Explicit
+Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (destination As Any, Source As Any, ByVal Length As Long)
+Declare Sub RtlMoveMemory Lib "kernel32" (ByRef dest As Any, ByRef Source As Any, ByVal nBytes As Long)
+Declare Function CloseHandle Lib "kernel32" (ByVal hObject As Long) As Long
+Declare Function GetPrivateProfileString Lib "kernel32" Alias "GetPrivateProfileStringA" (ByVal lpApplicationName As String, ByVal lpKeyName As Any, ByVal lpDefault As String, ByVal lpReturnedString As String, ByVal nSize As Long, ByVal lpFilename As String) As Long
+Declare Function GetWindowsDirectory Lib "kernel32" Alias "GetWindowsDirectoryA" (ByVal lpBuffer As String, ByVal nSize As Long) As Long
+Declare Function OpenProcess Lib "kernel32" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
+Declare Function ReadProcessMemory Lib "kernel32" (ByVal hProcess As Long, ByVal lpBaseAddress As Long, ByVal lpBuffer As String, ByVal nSize As Long, ByRef lpNumberOfBytesWritten As Long) As Long
+Declare Function WritePrivateProfileString Lib "kernel32" Alias "WritePrivateProfileStringA" (ByVal lpApplicationName As String, ByVal lpKeyName As Any, ByVal lpString As Any, ByVal lpFilename As String) As Long
+Declare Function AppendMenu Lib "user32" Alias "AppendMenuA" (ByVal hMenu As Long, ByVal wFlags As Long, ByVal wIDNewItem As Long, ByVal lpNewItem As String) As Long
+Declare Function CreatePopupMenu Lib "user32" () As Long
+Declare Function DrawMenuBar Lib "user32" (ByVal hwnd As Long) As Long
+Declare Function DeleteMenu Lib "user32" (ByVal hMenu As Long, ByVal nPosition As Long, ByVal wFlags As Long) As Long
+Declare Function DestroyMenu Lib "user32" (ByVal hMenu%) As Integer
+Declare Function EnableWindow Lib "user32" (ByVal hwnd As Long, ByVal cmd As Long) As Long
+Declare Function EnumWindows& Lib "user32" (ByVal lpEnumFunc As Long, ByVal lParam As Long)
+Declare Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+Declare Function FindWindowEx Lib "user32" Alias "FindWindowExA" (ByVal hWnd1 As Long, ByVal hWnd2 As Long, ByVal lpsz1 As String, ByVal lpsz2 As String) As Long
+Declare Function ExitWindowsEx& Lib "user32" (ByVal uFlags As Long, ByVal dwReserved As Long)
+Declare Function GetAsyncKeyState Lib "user32" (ByVal vKey As Long) As Integer
+Declare Function GetClassName& Lib "user32" Alias "GetClassNameA" (ByVal hwnd As Long, ByVal lpClassName As String, ByVal nMaxCount As Long)
+Declare Function GetMenu Lib "user32" (ByVal hwnd As Long) As Long
+Declare Function GetMenuItemCount Lib "user32" (ByVal hMenu As Long) As Long
+Declare Function GetMenuItemID Lib "user32" (ByVal hMenu As Long, ByVal nPos As Long) As Long
+Declare Function GetMenuString Lib "user32" Alias "GetMenuStringA" (ByVal hMenu As Long, ByVal wIDItem As Long, ByVal lpString As String, ByVal nMaxCount As Long, ByVal wFlag As Long) As Long
+Declare Function GetParent Lib "user32" (ByVal hwnd As Long) As Long
+Declare Function GetSubMenu Lib "user32" (ByVal hMenu As Long, ByVal nPos As Long) As Long
+Declare Function GetTopWindow Lib "user32" (ByVal hwnd As Long) As Long
+Declare Function GetWindow Lib "user32" (ByVal hwnd As Long, ByVal wCmd As Long) As Long
+Declare Function GetWindowLong& Lib "user32" Alias "GetWindowLongA" (ByVal hwnd As Long, ByVal nIndex As Long)
+Declare Function GetWindowRect Lib "user32" (ByVal hwnd As Long, lpRect As RECT) As Long
+Declare Function GetWindowText Lib "user32" Alias "GetWindowTextA" (ByVal hwnd As Long, ByVal lpString As String, ByVal cch As Long) As Long
+Declare Function GetWindowTextLength Lib "user32" Alias "GetWindowTextLengthA" (ByVal hwnd As Long) As Long
+Declare Function GetWindowThreadProcessId Lib "user32" (ByVal hwnd As Long, lpdwProcessId As Long) As Long
+Declare Function InsertMenu Lib "user32" Alias "InsertMenuA" (ByVal hMenu As Long, ByVal nPosition As Long, ByVal wFlags As Long, ByVal wIDNewItem As Long, ByVal lpNewItem As String) As Long
+Declare Function iswindowenabled Lib "user32" Alias "IsWindowEnabled" (ByVal hwnd As Long) As Long
+Declare Function MciSendString Lib "winmm.dll" Alias "mciSendStringA" (ByVal lpstrCommand As String, ByVal lpstrReturnString As String, ByVal uReturnLength As Long, ByVal hwndCallback As Long) As Long
+Declare Function MoveWindow Lib "user32" (ByVal hwnd As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+Declare Function PostMessage Lib "user32" Alias "PostMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long) As Long
+Declare Function PutFocus Lib "user32" Alias "SetFocus" (ByVal hwnd As Long) As Long
+Declare Function RedrawWindow Lib "user32" (ByVal hwnd As Long, lprcUpdate As RECT, ByVal hrgnUpdate As Long, ByVal fuRedraw As Long) As Long
+Declare Function RegisterWindowMessage& Lib "user32" Alias "RegisterWindowMessageA" (ByVal lpString As String)
+Declare Function ReleaseCapture Lib "user32" () As Long
+Declare Function RemoveMenu Lib "user32" (ByVal hMenu As Long, ByVal nPosition As Long, ByVal wFlags As Long) As Long
+Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
+Declare Function SendMessageLong Lib "user32" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Integer, ByVal lParam As Long) As Long
+Declare Function sendmessagebynum& Lib "user32" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As Long)
+Declare Function SendMessageByString Lib "user32" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, ByVal lParam As String) As Long
+Declare Function SetFocusAPI Lib "user32" Alias "SetFocus" (ByVal hwnd As Long) As Long
+Declare Function SetRect Lib "user32" (lpRect As RECT, ByVal X1 As Long, ByVal Y1 As Long, ByVal X2 As Long, ByVal Y2 As Long) As Long
+Declare Function SetParent Lib "user32" (ByVal hWndChild As Long, ByVal hWndNewParent As Long) As Long
+Declare Function SetWindowPos Lib "user32" (ByVal hwnd As Long, ByVal hWndInsertAfter As Long, ByVal X As Long, ByVal Y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
+Declare Function ShowCursor Lib "user32" (ByVal bShow As Long) As Long
+Declare Function ShowWindow Lib "user32" (ByVal hwnd As Long, ByVal nCmdShow As Long) As Long
+Declare Function sndPlaySound Lib "winmm.dll" Alias "sndPlaySoundA" (ByVal lpszSoundName As String, ByVal uFlags As Long) As Long
+Declare Function SystemParametersInfo Lib "user32" Alias "SystemParametersInfoA" (ByVal uAction As Long, ByVal uParam As Long, lpvParam As Any, ByVal fuWinIni As Long) As Long
+Const EM_UNDO = &HC7
+Global Const GFSR_SYSTEMRESOURCES = 0
+Global Const GFSR_GDIRESOURCES = 1
+Global Const GFSR_USERRESOURCES = 2
+Global Const WM_MDICREATE = &H220
+Global Const WM_MDIDESTROY = &H221
+Global Const WM_MDIACTIVATE = &H222
+Global Const WM_MDIRESTORE = &H223
+Global Const WM_MDINEXT = &H224
+Global Const WM_MDIMAXIMIZE = &H225
+Global Const WM_MDITILE = &H226
+Global Const WM_MDICASCADE = &H227
+Global Const WM_MDIICONARRANGE = &H228
+Global Const WM_MDIGETACTIVE = &H229
+Global Const WM_MDISETMENU = &H230
+Global Const WM_CUT = &H300
+Global Const WM_COPY = &H301
+Global Const WM_PASTE = &H302
+Global Const SND_SYNC = &H0
+Global Const SND_ASYNC = &H1
+Global Const SND_NODEFAULT = &H2
+Global Const SND_LOOP = &H8
+Global Const SND_NOSTOP = &H10
+Public Const WM_CHAR = &H102
+Public Const WM_SETTEXT = &HC
+Public Const WM_USER = &H400
+Public Const WM_KEYDOWN = &H100
+Public Const WM_KEYUP = &H101
+Public Const WM_LBUTTONDOWN = &H201
+Public Const WM_LBUTTONUP = &H202
+Public Const WM_CLOSE = &H10
+Public Const WM_COMMAND = &H111
+Public Const WM_CLEAR = &H303
+Public Const WM_DESTROY = &H2
+Public Const WM_GETTEXT = &HD
+Public Const WM_GETTEXTLENGTH = &HE
+Public Const WM_LBUTTONDBLCLK = &H203
+Public Const BM_GETCHECK = &HF0
+Public Const BM_GETSTATE = &HF2
+Public Const BM_SETCHECK = &HF1
+Public Const BM_SETSTATE = &HF3
+Public Const EWX_FORCE = 4
+Public Const EWX_LOGOFF = 0
+Public Const EWX_REBOOT = 2
+Public Const EWX_SHUTDOWN = 1
+Public Const LB_GETITEMDATA = &H199
+Public Const LB_GETCOUNT = &H18B
+Public Const LB_ADDSTRING = &H180
+Public Const LB_DELETESTRING = &H182
+Public Const LB_FINDSTRING = &H18F
+Public Const LB_FINDSTRINGEXACT = &H1A2
+Public Const LB_GETCURSEL = &H188
+Public Const LB_GETTEXT = &H189
+Public Const LB_GETTEXTLEN = &H18A
+Public Const LB_SELECTSTRING = &H18C
+Public Const LB_SETCOUNT = &H1A7
+Public Const LB_SETCURSEL = &H186
+Public Const LB_SETSEL = &H185
+Public Const LB_INSERTSTRING = &H181
+Public Const VK_HOME = &H24
+Public Const VK_RIGHT = &H27
+Public Const VK_CONTROL = &H11
+Public Const VK_DELETE = &H2E
+Public Const VK_DOWN = &H28
+Public Const VK_LEFT = &H25
+Public Const VK_RETURN = &HD
+Public Const VK_SPACE = &H20
+Public Const VK_TAB = &H9
+Public Const HWND_TOP = 0
+Public Const HWND_TOPMOST = -1
+Public Const HWND_NOTOPMOST = -2
+Public Const SWP_NOMOVE = &H2
+Public Const SWP_NOSIZE = &H1
+Public Const FLAGS = SWP_NOMOVE Or SWP_NOSIZE
+Public Const GW_CHILD = 5
+Public Const GW_HWNDFIRST = 0
+Public Const GW_HWNDLAST = 1
+Public Const GW_HWNDNEXT = 2
+Public Const GW_HWNDPREV = 3
+Public Const GW_MAX = 5
+Public Const GW_OWNER = 4
+Public Const SW_MAXIMIZE = 3
+Public Const SW_MINIMIZE = 6
+Public Const SW_HIDE = 0
+Public Const SW_RESTORE = 9
+Public Const SW_SHOW = 5
+Public Const SW_SHOWDEFAULT = 10
+Public Const SW_SHOWMAXIMIZED = 3
+Public Const SW_ShowMinimized = 2
+Public Const SW_SHOWMINNOACTIVE = 7
+Public Const SW_SHOWNOACTIVATE = 4
+Public Const SW_SHOWNORMAL = 1
+Public Const MF_APPEND = &H100&
+Public Const MF_DELETE = &H200&
+Public Const MF_CHANGE = &H80&
+Public Const MF_ENABLED = &H0&
+Public Const MF_DISABLED = &H2&
+Public Const MF_REMOVE = &H1000&
+Public Const MF_POPUP = &H10&
+Public Const MF_STRING = &H0&
+Public Const MF_UNCHECKED = &H0&
+Public Const MF_CHECKED = &H8&
+Public Const MF_GRAYED = &H1&
+Public Const MF_BYPOSITION = &H400&
+Public Const MF_BYCOMMAND = &H0&
+Public Const MF_SEPARATOR = &H800&
+Public Const GWW_HINSTANCE = (-6)
+Public Const GWW_ID = (-12)
+Public Const GWL_STYLE = (-16)
+Public Const ENTA = 13
+Public Const PROCESS_VM_READ = &H10
+Public Const STANDARD_RIGHTS_REQUIRED = &HF0000
+Private Const EM_LINESCROLL = &HB6
+Private Const SPI_SCREENSAVERRUNNING = 97
+Type RECT
+   Left As Long
+   Top As Long
+   Right As Long
+   Bottom As Long
+End Type
+Type POINTAPI
+   X As Long
+   Y As Long
+End Type
+Sub Aim_Buddylist_ToCombo(Cmb As ComboBox)
+'This was taken from DigitalAimGold.bas
+Dim BuddyList As Long, TabGroup As Long
+Dim BuddyTree As Long, LopGet, MooLoo, Moo2
+Dim Name As String, NameLen, buffer As String
+Dim TabPos, NameText As String, text As String
+Dim mooz, Well As Integer
+BuddyList& = FindWindow("_Oscar_BuddyListWin", vbNullString)
+If BuddyList& <> 0 Then
+Do
+TabGroup& = FindWindowEx(BuddyList&, 0, "_Oscar_TabGroup", vbNullString)
+BuddyTree& = FindWindowEx(TabGroup&, 0, "_Oscar_Tree", vbNullString)
+Loop Until BuddyTree& <> 0
+LopGet = SendMessage(BuddyTree&, LB_GETCOUNT, 0, 0)
+For MooLoo = 0 To LopGet - 1
+Call SendMessageByString(BuddyTree&, LB_SETCURSEL, MooLoo, 0)
+NameLen = SendMessage(BuddyTree&, LB_GETTEXTLEN, MooLoo, 0)
+buffer$ = String$(NameLen, 0)
+Moo2 = SendMessageByString(BuddyTree&, LB_GETTEXT, MooLoo, buffer$)
+TabPos = InStr(buffer$, Chr$(9))
+NameText$ = Right$(buffer$, (Len(buffer$) - (TabPos)))
+TabPos = InStr(NameText$, Chr$(9))
+text$ = Right$(NameText$, (Len(NameText$) - (TabPos)))
+Name$ = text$
+If InStr(Name$, "(") <> 0 And InStr(Name$, ")") <> 0 Then
+GoTo HellNo
+End If
+For mooz = 0 To Cmb.ListCount - 1
+If Name$ = Cmb.List(mooz) Then
+Well% = 123
+GoTo HellNo
+End If
+Next mooz
+If Well% <> 123 Then
+Cmb.AddItem Name$
+Else
+End If
+HellNo:
+Next MooLoo
+End If
+End Sub
+Sub Aim_Buddylist_ToList(lis As ListBox)
+'This was taken from DigitalAimGold.bas
+Dim BuddyList As Long, TabGroup As Long
+Dim BuddyTree As Long, LopGet, MooLoo, Moo2
+Dim Name As String, NameLen, buffer As String
+Dim TabPos, NameText As String, text As String
+Dim mooz, Well As Integer
+BuddyList& = FindWindow("_Oscar_BuddyListWin", vbNullString)
+If BuddyList& <> 0 Then
+Do
+TabGroup& = FindWindowEx(BuddyList&, 0, "_Oscar_TabGroup", vbNullString)
+BuddyTree& = FindWindowEx(TabGroup&, 0, "_Oscar_Tree", vbNullString)
+Loop Until BuddyTree& <> 0
+LopGet = SendMessage(BuddyTree&, LB_GETCOUNT, 0, 0)
+For MooLoo = 0 To LopGet - 1
+Call SendMessageByString(BuddyTree&, LB_SETCURSEL, MooLoo, 0)
+NameLen = SendMessage(BuddyTree&, LB_GETTEXTLEN, MooLoo, 0)
+buffer$ = String$(NameLen, 0)
+Moo2 = SendMessageByString(BuddyTree&, LB_GETTEXT, MooLoo, buffer$)
+TabPos = InStr(buffer$, Chr$(9))
+NameText$ = Right$(buffer$, (Len(buffer$) - (TabPos)))
+TabPos = InStr(NameText$, Chr$(9))
+text$ = Right$(NameText$, (Len(NameText$) - (TabPos)))
+Name$ = text$
+If InStr(Name$, "(") <> 0 And InStr(Name$, ")") <> 0 Then
+GoTo HellNo
+End If
+For mooz = 0 To lis.ListCount - 1
+If Name$ = lis.List(mooz) Then
+Well% = 123
+GoTo HellNo
+End If
+Next mooz
+If Well% <> 123 Then
+lis.AddItem Name$
+Else
+End If
+HellNo:
+Next MooLoo
+End If
+End Sub
+Sub Combo_AddFonts(Cmb As ComboBox)
+Dim i
+For i = 0 To Screen.FontCount - 1
+Cmb.AddItem Screen.Fonts(i)
+Next i
+End Sub
+Function Get_Caption(TheWin)
+'This was taken from dos32.bas
+Dim WindowLngth As Integer, WindowTtle As String, Moo As String
+WindowLngth% = GetWindowTextLength(TheWin)
+WindowTtle$ = String$(WindowLngth%, 0)
+Moo$ = GetWindowText(TheWin, WindowTtle$, (WindowLngth% + 1))
+Get_Caption = WindowTtle$
+End Function
+Sub List_KillDup(Lst As ListBox)
+Dim i, Moo
+For i = 0 To Lst.ListCount - 1
+For Moo = 0 To Lst.ListCount - 1
+If LCase(Lst.List(i)) Like LCase(Lst.List(Moo)) And i <> Moo Then
+Lst.RemoveItem (Moo)
+End If
+Next Moo
+Next i
+End Sub
+Sub Window_Hide(TheWindow)
+Call ShowWindow(TheWindow, SW_HIDE)
+End Sub
+Sub Window_Minimize(TheWindow)
+Call ShowWindow(TheWindow, SW_MINIMIZE)
+End Sub
+Sub Window_Maximize(TheWindow)
+Call ShowWindow(TheWindow, SW_MAXIMIZE)
+End Sub
+Sub Window_Show(TheWindow)
+Call ShowWindow(TheWindow, SW_SHOW)
+End Sub
+Sub Window_OnTop(theForm As Form)
+Dim SetOnTop
+SetOnTop = SetWindowPos(theForm.hwnd, HWND_TOPMOST, 0, 0, 0, 0, FLAGS)
+End Sub
+Sub Window_SetText(TheWindow As Long, TheMessage As String)
+Call SendMessageByString(TheWindow&, WM_SETTEXT, 0&, TheMessage$)
+End Sub
+Sub Window_Close(TheWindow)
+Call PostMessage(TheWindow, WM_CLOSE, 0&, 0&)
+End Sub
+Sub Aim_Im_BlankIm()
+Dim gobuttonicon&
+Dim oscarbuddylistwin&
+Dim editx&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+editx& = FindWindowEx(oscarbuddylistwin&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, "aim:goim")
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_iconbtn", vbNullString)
+gobuttonicon& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+gobuttonicon& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+editx& = FindWindowEx(oscarbuddylistwin&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, "*Search the Web*")
+End Sub
+Sub Aim_Im_Send_Normal(ThePerson$, TheMessage$)
+'This will send a Im.
+Dim oscarpersistantcombo&
+Dim oscarbuddylistwin&
+Dim sendbuttonicon1&
+Dim oscariconbtn2&
+Dim gobuttonicon&
+Dim oscariconbtn&
+Dim wndateclass&
+Dim aimimessage&
+Dim ateclass&
+Dim editx2&
+Dim editx&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+editx& = FindWindowEx(oscarbuddylistwin&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, "aim:goim")
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_iconbtn", vbNullString)
+gobuttonicon& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+gobuttonicon& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscarpersistantcombo& = FindWindowEx(aimimessage&, 0&, "_oscar_persistantcombo", vbNullString)
+editx2& = FindWindowEx(oscarpersistantcombo&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx2&, WM_SETTEXT, 0&, ThePerson$)
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, TheMessage$)
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn2& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn2&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn2&, WM_LBUTTONUP, 0, 0&)
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+editx& = FindWindowEx(oscarbuddylistwin&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, "*Search the Web*")
+End Sub
+Sub Pause(interval)
+'This was taken from digitalaimgold.bas
+Dim current
+current = Timer
+Do While Timer - current < Val(interval)
+DoEvents
+Loop
+End Sub
+Sub Aim_Im_Send_Normal2(ThePerson$, TheMessage$)
+'This will send a Im and then close it.
+Dim oscarpersistantcombo&
+Dim oscarbuddylistwin&
+Dim sendbuttonicon1&
+Dim oscariconbtn2&
+Dim gobuttonicon&
+Dim oscariconbtn&
+Dim wndateclass&
+Dim aimimessage&
+Dim ateclass&
+Dim editx2&
+Dim editx&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+editx& = FindWindowEx(oscarbuddylistwin&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, "aim:goim")
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_iconbtn", vbNullString)
+gobuttonicon& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+gobuttonicon& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscarpersistantcombo& = FindWindowEx(aimimessage&, 0&, "_oscar_persistantcombo", vbNullString)
+editx2& = FindWindowEx(oscarpersistantcombo&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx2&, WM_SETTEXT, 0&, ThePerson$)
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, TheMessage$)
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn2& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn2&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn2&, WM_LBUTTONUP, 0, 0&)
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+editx& = FindWindowEx(oscarbuddylistwin&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, "*Search the Web*")
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+Call ShowWindow(aimimessage&, SW_HIDE)
+End Sub
+Sub Aim_Im_Clear()
+'This clears the open Im.
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, "")
+End Sub
+Function Get_Text(child)
+'This was taken from dos32.bas
+Dim GetTrim As Integer, TrimSpace As String, GetString As String
+GetTrim% = sendmessagebynum(child, 14, 0&, 0&)
+TrimSpace$ = Space$(GetTrim)
+GetString$ = SendMessageByString(child, 13, GetTrim + 1, TrimSpace$)
+Get_Text = TrimSpace$
+End Function
+Function Aim_Im_Get_Text()
+'Gets text from open Im.
+Dim aimimessage2$
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+aimimessage2$ = Get_Text(ateclass&)
+Aim_Im_Get_Text = aimimessage2$
+End Function
+Sub Aim_Im_AntiPunt()
+Dim aimimessage2$
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+aimimessage2$ = Get_Text(ateclass&)
+If InStr(aimimessage2$, "Punt") Or InStr(aimimessage2$, "punt") Or InStr(aimimessage2$, "Punter") Or InStr(aimimessage2$, "punter") Then
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, "")
+End If
+End Sub
+Sub Aim_Im_AutoClear(TheWord$)
+Dim aimimessage2$
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+aimimessage2$ = Get_Text(ateclass&)
+If InStr(aimimessage2$, TheWord$) Then
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, "")
+End If
+End Sub
+Sub RunMenuByString(Application, StringSearch)
+'This was taken from hix32.bas
+Dim ToSearch As Integer, MenuCount As Integer, FindString
+Dim ToSearchSub As Integer, MenuItemCount As Integer, GetString
+Dim SubCount As Integer, MenuString As String, GetStringMenu As Integer
+Dim MenuItem As Integer, RunTheMenu As Integer
+ToSearch% = GetMenu(Application)
+MenuCount% = GetMenuItemCount(ToSearch%)
+For FindString = 0 To MenuCount% - 1
+ToSearchSub% = GetSubMenu(ToSearch%, FindString)
+MenuItemCount% = GetMenuItemCount(ToSearchSub%)
+For GetString = 0 To MenuItemCount% - 1
+SubCount% = GetMenuItemID(ToSearchSub%, GetString)
+MenuString$ = String$(100, " ")
+GetStringMenu% = GetMenuString(ToSearchSub%, SubCount%, MenuString$, 100, 1)
+If InStr(UCase(MenuString$), UCase(StringSearch)) Then
+MenuItem% = SubCount%
+GoTo MatchString
+End If
+Next GetString
+Next FindString
+MatchString:
+RunTheMenu% = SendMessage(Application, WM_COMMAND, MenuItem%, 0)
+End Sub
+Sub Aim_Im_TimestampsOnOff()
+'This turns Timestamps on and off in the open Im.
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+Call RunMenuByString(aimimessage&, "&Timestamp")
+End Sub
+Sub Aim_Im_DirectConnectOpen()
+'This direct connects to the person in the open Im.
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+Call RunMenuByString(aimimessage&, "Connect to Send IM I&mage")
+End Sub
+Sub Aim_Im_DirectConnectClose()
+'This disconnects to the person in the open Im.
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+Call RunMenuByString(aimimessage&, "&Close IM Image Connection")
+End Sub
+Sub Aim_Im_Close()
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+Call PostMessage(aimimessage&, WM_CLOSE, 0&, 0&)
+End Sub
+Sub Aim_Im_Minimize()
+Dim aimimessage&
+Dim minimizeim&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+minimizeim& = ShowWindow(aimimessage&, SW_MINIMIZE)
+End Sub
+Sub Aim_Im_Maximize()
+Dim aimimessage&
+Dim maximizeim&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+maximizeim& = ShowWindow(aimimessage&, SW_MAXIMIZE)
+End Sub
+Sub Aim_Im_Restore()
+Dim aimimessage&
+Dim maximizeim&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+maximizeim& = ShowWindow(aimimessage&, SW_RESTORE)
+End Sub
+Sub Aim_Im_Hide_Im()
+Dim aimimessage&
+Dim hideim&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+hideim& = ShowWindow(aimimessage&, SW_HIDE)
+End Sub
+Sub Aim_Im_Show_Im()
+Dim aimimessage&
+Dim showim&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+showim& = ShowWindow(aimimessage&, SW_SHOW)
+End Sub
+Sub Aim_Im_AppendMenu(TheMessage$)
+'This makes a menu in on the menu in the Im.
+Dim aimimmenu$
+Dim aimimsubmenu$
+Dim aimimappendmenu$
+aimimmenu$ = FindWindow("aim_imessage", vbNullString)
+aimimsubmenu$ = GetMenu(aimimmenu$)
+aimimsubmenu$ = GetSubMenu(aimimsubmenu$, 0)
+aimimappendmenu$ = AppendMenu(aimimsubmenu$, MF_STRING, 5, TheMessage$)
+End Sub
+Function Aim_Im_FindMe()
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+End Function
+Sub Aim_Im_AppendGrayMenu(TheMessage$)
+Dim aimimmenu$
+Dim aimimsubmenu$
+Dim aimimappendmenu$
+aimimmenu$ = FindWindow("aim_imessage", vbNullString)
+aimimsubmenu$ = GetMenu(aimimmenu$)
+aimimsubmenu$ = GetSubMenu(aimimsubmenu$, 0)
+aimimappendmenu$ = AppendMenu(aimimsubmenu$, MF_GRAYED, 5, TheMessage$)
+End Sub
+Sub Aim_Im_Click_TalkButton()
+Dim sendbuttonicon1&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Im_Click_InfoButton()
+Dim sendbuttonicon1&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Im_Click_SendButton()
+Dim sendbuttonicon1&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Im_Click_WarnButton()
+Dim sendbuttonicon1&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Im_Click_BlockButton()
+Dim sendbuttonicon1&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Im_Click_AddBuddyButton()
+Dim sendbuttonicon1&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Im_SendFile()
+'This sends a file to the person in the open Im.
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+Call RunMenuByString(aimimessage&, "Send &File")
+End Sub
+Sub Aim_Im_Get_File()
+'This gets a file to the person in the open Im.
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+Call RunMenuByString(aimimessage&, "&Get File")
+End Sub
+Sub Aim_Im_Save()
+'This saves the text in an Im.
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+Call RunMenuByString(aimimessage&, "&Save")
+End Sub
+Sub Aim_Im_Print()
+'This prints the text in the Im.
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+Call RunMenuByString(aimimessage&, "&Print")
+End Sub
+Sub Aim_Im_Hide_WarnButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Im_Hide_BlockButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Im_Hide_AddBuddyButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Im_Hide_TalkButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Im_Hide_InfoButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Im_Hide_FontButtons()
+Dim hideim&
+Dim aimimessage&
+Dim wndateclass&
+Dim cbclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+cbclass& = FindWindowEx(wndateclass&, 0&, "cbclass", vbNullString)
+hideim& = ShowWindow(cbclass&, SW_HIDE)
+End Sub
+Sub Aim_Im_Hide_ImMessage()
+'This doesn't really hide it. It makes it clear.
+'Minimize the Im then Maximize it for it to work.
+Dim hideim&
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+hideim& = ShowWindow(ateclass&, SW_HIDE)
+End Sub
+Sub Aim_Im_Hide_BuddyIcon()
+'This doesn't really hide it. It makes it clear.
+'Minimize the Im then Maximize it for it to work.
+Dim hideim&
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+hideim& = ShowWindow(ateclass&, SW_HIDE)
+End Sub
+Function Aim_Im_Get_Sn() As String
+'This get the name of the person your talking to.
+Dim aimimessage&
+Dim aimgetcaption$
+Dim aimchangetext$
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+aimgetcaption$ = Get_Caption(aimimessage&)
+aimchangetext$ = ReplaceString(aimgetcaption$, " - Instant Message", "")
+Aim_Im_Get_Sn = aimchangetext$
+End Function
+Function ReplaceString(MyString As String, ToFind As String, ReplaceWith As String) As String
+'This was taken for dos32.bas
+Dim Spot As Long, NewSpot As Long, LeftString As String
+Dim RightString As String, NewString As String
+Spot& = InStr(LCase(MyString$), LCase(ToFind))
+NewSpot& = Spot&
+Do
+If NewSpot& > 0& Then
+LeftString$ = Left(MyString$, NewSpot& - 1)
+If Spot& + Len(ToFind$) <= Len(MyString$) Then
+RightString$ = Right(MyString$, Len(MyString$) - NewSpot& - Len(ToFind$) + 1)
+Else
+RightString = ""
+End If
+NewString$ = LeftString$ & ReplaceWith$ & RightString$
+MyString$ = NewString$
+Else
+NewString$ = MyString$
+End If
+Spot& = NewSpot& + Len(ReplaceWith$)
+If Spot& > 0 Then
+NewSpot& = InStr(Spot&, LCase(MyString$), LCase(ToFind$))
+End If
+Loop Until NewSpot& < 1
+ReplaceString$ = NewString$
+End Function
+Function Get_Class(TheWin)
+'This is from dos32.bas
+Dim Buffzz As String, GetClass As String
+Buffzz$ = String$(250, 0)
+GetClass$ = GetClassName(TheWin, Buffzz$, 250)
+Get_Class = Buffzz$
+End Function
+Function Aim_Im_Get_Sn2() As String
+'This get the name of the person when you are directly
+'connected.
+Dim aimimessage&
+Dim aimgetcaption$
+Dim aimchangetext$
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+aimgetcaption$ = Get_Caption(aimimessage&)
+aimchangetext$ = ReplaceString(aimgetcaption$, " - Direct Instant Message", "")
+Aim_Im_Get_Sn2 = aimchangetext$
+End Function
+Function Aim_IM_Get_Text2() As String
+'This is from digitalaimgold.bas
+Dim AIMim As Long, Thing As Long, getit As String, clear As String
+AIMim& = FindWindow("AIM_IMessage", vbNullString)
+Thing& = FindWindowEx(AIMim&, 0, "WndAte32Class", vbNullString)
+getit$ = Get_Text(Thing&)
+clear$ = HTML_Remove(getit$)
+Aim_IM_Get_Text2 = clear$
+End Function
+Function HTML_Remove(Stg As String) As String
+'This is from Raid's bas
+Dim i, beg As String, ends As String, after As String, junk As String, junk2 As String, before As String
+Dim TheStrg As String
+TheStrg$ = ReplaceString(Stg$, "<BR>", "" & Chr$(13) + Chr$(10))
+For i = 1 To Len(Stg)
+beg$ = InStr(1, Stg, "<")
+If beg$ = 0 Then
+GoTo Endz:
+Else
+ends$ = InStr(1, Stg, ">")
+End If
+If ends$ = 0 Then
+GoTo Endz:
+Else
+after$ = Mid$(Stg$, ends$ + 1, Len(Stg$) - ends$)
+junk$ = Len(Stg$) - (beg$ - 1)
+junk2$ = Len(Stg$) - junk$
+before$ = Mid$(Stg$, 1, junk2$)
+Stg$ = before$ & after$
+End If
+Next i
+Endz:
+HTML_Remove = Stg$
+End Function
+Sub Aim_Im_Send_Link(ThePerson$, TheUrl$, TheLinkText$)
+'This sends a link.
+Call Aim_Im_Send_Normal(ThePerson$, "<a href=""" + TheUrl$ + """>" + TheLinkText$ + "")
+End Sub
+Sub Aim_Im_Send_Link2(ThePerson$, TheUrl$, TheLinkText$)
+'This send a link then closes.
+Call Aim_Im_Send_Normal2(ThePerson$, "<a href=""" + TheUrl$ + """>" + TheLinkText$ + "")
+End Sub
+Function List_Count(Lst As ListBox)
+Dim List$
+List$ = Lst.ListCount
+List_Count = List$
+End Function
+Sub Aim_Im_Show_WarnButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Im_Show_BlockButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Im_Show_AddBuddyButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Im_Show_TalkButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Im_Show_InfoButton()
+Dim hideim&
+Dim aimimessage&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Im_Show_FontButtons()
+Dim hideim&
+Dim aimimessage&
+Dim wndateclass&
+Dim cbclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+cbclass& = FindWindowEx(wndateclass&, 0&, "cbclass", vbNullString)
+hideim& = ShowWindow(cbclass&, SW_SHOW)
+End Sub
+Sub Aim_Im_Show_ImMessage()
+Dim hideim&
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+hideim& = ShowWindow(ateclass&, SW_SHOW)
+End Sub
+Sub Aim_Im_Show_BuddyIcon()
+Dim hideim&
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+hideim& = ShowWindow(ateclass&, SW_SHOW)
+End Sub
+Sub Aim_Im_Send_FontName(ThePerson$, TheFakeFontName$, TheNormalText$)
+'This makes a fake font name.
+Call Aim_Im_Send_Normal(ThePerson$, "<font face=""" + TheFakeFontName$ + """>" + TheNormalText$ + "")
+End Sub
+Sub Aim_Im_Send_FontName2(ThePerson$, TheFakeFontName$, TheNormalText$)
+'This makes a fake font name then closes the Im.
+Call Aim_Im_Send_Normal2(ThePerson$, "<font face=""" + TheFakeFontName$ + """>" + TheNormalText$ + "")
+End Sub
+Sub Aim_Edit_Profile()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "Edit &Profile...")
+End Sub
+Sub Aim_Buddylist_Save()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "&Save Buddy List...")
+End Sub
+Sub Aim_Buddylist_Load()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "&Load Buddy List...")
+End Sub
+Sub Aim_NewsTicker_Open()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "&News Ticker...")
+End Sub
+Sub Aim_NewsTicker_Close()
+Dim aimscrolltickernewswnd&
+aimscrolltickernewswnd& = FindWindow("aim_scrolltickernewswnd", vbNullString)
+Call PostMessage(aimscrolltickernewswnd&, WM_CLOSE, 0&, 0&)
+End Sub
+Sub Aim_StockTicker_Open()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "Stock &Ticker")
+End Sub
+Sub Aim_StockTicker_Save()
+Dim aimctlgroupwnd&
+aimctlgroupwnd& = FindWindow("aim_ctlgroupwnd", vbNullString)
+Call RunMenuByString(aimctlgroupwnd&, "&Save")
+End Sub
+Sub Aim_StockTicker_SaveAs()
+Dim aimctlgroupwnd&
+aimctlgroupwnd& = FindWindow("aim_ctlgroupwnd", vbNullString)
+Call RunMenuByString(aimctlgroupwnd&, "Save &As...")
+End Sub
+Sub Aim_StockTicker_Preferences()
+Dim aimctlgroupwnd&
+aimctlgroupwnd& = FindWindow("aim_ctlgroupwnd", vbNullString)
+Call RunMenuByString(aimctlgroupwnd&, "Ticker &Preferences...")
+End Sub
+Sub Aim_StockTicker_Close()
+Dim aimctlgroupwnd&
+aimctlgroupwnd& = FindWindow("aim_ctlgroupwnd", vbNullString)
+Call RunMenuByString(aimctlgroupwnd&, "&Close")
+End Sub
+Sub Aim_StockTicker_Minimize()
+Dim minimizestock&
+Dim aimctlgroupwnd&
+aimctlgroupwnd& = FindWindow("aim_ctlgroupwnd", vbNullString)
+minimizestock& = ShowWindow(aimctlgroupwnd&, SW_MINIMIZE)
+End Sub
+Sub Aim_StockTicker_Maximize()
+Dim maximizestock&
+Dim aimctlgroupwnd&
+aimctlgroupwnd& = FindWindow("aim_ctlgroupwnd", vbNullString)
+maximizestock& = ShowWindow(aimctlgroupwnd&, SW_MAXIMIZE)
+End Sub
+Sub Aim_StockTicker_Show()
+Dim aimctlgroupwnd&
+aimctlgroupwnd& = FindWindow("aim_ctlgroupwnd", vbNullString)
+Call ShowWindow(aimctlgroupwnd&, SW_SHOW)
+End Sub
+Sub Aim_StockTicker_Hide()
+Dim aimctlgroupwnd&
+aimctlgroupwnd& = FindWindow("aim_ctlgroupwnd", vbNullString)
+Call ShowWindow(aimctlgroupwnd&, SW_HIDE)
+End Sub
+Sub Aim_StockTicker_Restore()
+Dim maximizestock&
+Dim aimctlgroupwnd&
+aimctlgroupwnd& = FindWindow("aim_ctlgroupwnd", vbNullString)
+maximizestock& = ShowWindow(aimctlgroupwnd&, SW_RESTORE)
+End Sub
+Sub AIM_Main_Exit()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "&Close")
+End Sub
+Sub Aim_Main_SignOnAFriend()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "&Sign On A Friend...")
+End Sub
+Sub Aim_Findby_Email(ThereEmail$)
+'This is from digitalaimgold.bas
+Dim BuddyList As Long
+BuddyList& = FindWindow("_Oscar_BuddyListWin", vbNullString)
+If BuddyList& <> 0& Then
+GoTo Start
+Else
+Exit Sub
+End If
+Start: Dim FindBud As Long, TheWin As Long
+Dim Email As Long, Nxbut As Long, NextButtin As Long
+Dim FindEm As Long, Ewin As Long, textbox As Long, textset As Long
+Dim NextB As Long, NextButtin2 As Long, EndUpNo As Long
+Dim Resultz As Long, Well As Long
+BuddyList& = FindWindow("_Oscar_BuddyListWin", vbNullString)
+Call RunMenuByString(BuddyList&, "Find a Buddy &Wizard")
+FindBud& = FindWindow("#32770", "Find a Buddy")
+TheWin& = FindWindowEx(FindBud&, 0, "#32770", vbNullString)
+Email& = FindWindowEx(TheWin&, 0, "Button", vbNullString)
+Call SendMessage(Email&, WM_KEYDOWN, VK_SPACE, 0&)
+Call SendMessage(Email&, WM_KEYUP, VK_SPACE, 0&)
+Nxbut& = FindWindowEx(FindBud&, 0, "Button", vbNullString)
+NextButtin& = FindWindowEx(FindBud&, Nxbut&, "Button", vbNullString)
+Call SendMessage(NextButtin&, WM_KEYDOWN, VK_SPACE, 0&)
+Call SendMessage(NextButtin&, WM_KEYUP, VK_SPACE, 0&)
+FindEm& = FindWindow("#32770", "Find a Buddy by E-mail Address")
+Ewin& = FindWindowEx(FindEm&, 0, "#32770", vbNullString)
+textbox& = FindWindowEx(Ewin&, 0, "Edit", vbNullString)
+textset& = SendMessageByString(textbox&, WM_SETTEXT, 0, ThereEmail$)
+NextB& = FindWindowEx(FindEm&, 0, "Button", vbNullString)
+NextButtin2& = FindWindowEx(FindEm&, NextB&, "Button", vbNullString)
+Call SendMessage(NextButtin2&, WM_KEYDOWN, VK_SPACE, 0&)
+Call SendMessage(NextButtin2&, WM_KEYUP, VK_SPACE, 0&)
+EndUpNo& = FindWindow("#32770", "Find a Buddy by E-mail Address")
+Resultz& = FindWindowEx(EndUpNo&, 0, "#32770", vbNullString)
+Well& = FindWindowEx(Resultz&, 0, "Static", vbNullString)
+If EndUpNo& And Resultz& And Well& <> 0& Then
+Call PostMessage(EndUpNo&, WM_CLOSE, 0&, 0&)
+MsgBox "No one found in AIM database matching that e-mail address.", vbExclamation, "E-mail not found."
+Else
+Exit Sub
+End If
+End Sub
+Sub Aim_FindBy_Interests(Cbm1 As ComboBox)
+'This was taken from digitalaimgold.bas
+' Please put all these in a Combo box for the user to
+' select from, you HAVE to have a combo with all these
+' in it for this to work
+
+    'Books and Writing
+    'Banking
+    'Education
+    'Engineering
+    'Entrepeneurship
+    'Finance
+    'Law
+    'Marketing
+    'Medical
+    'Performing Arts
+    'Small Business
+    'Cars
+    'African -American
+    'College Students
+    'Hispanic
+    'Seniors
+    'Teens
+    'Women
+    'Computers and Technology
+    'Business News
+    'International News
+    'Politics
+    'Sports News
+    'Fashion
+    'Moms Online
+    'Parenting
+    'Pregnancy and Birth
+    'Separation and Divorce
+    'Games
+    'Diseases
+    'Fitness
+    'Medicine
+    'Antiques
+    'Architecture
+    'Astrology
+    'Aviation
+    'Civil War
+    'Bird Watching
+    'Coins
+    'Crafts
+    'Food
+    'Gardening
+    'Genealogy
+    'Martial Arts
+    'Pets
+    'Photography
+    'Science Fiction
+    'Sewing and Needlecraft
+    'Stamps
+    'The Arts
+    'Wines and Beer
+    'Gardening
+    'Home Decorating
+    'Home Improvement
+    'Bonds
+    'Mutual Funds
+    'Real Estate
+    'Stocks
+    'Taxes
+    'Chat
+    'Marriage
+    'Romance
+    'Movies
+    'Alternative
+    'Classical
+    'Jazz
+    'Rythm and Blues
+    'Rock
+    'Atheism
+    'Buddhism
+    'Christianity
+    'Hinduism
+    'Islam
+    'Judaism
+    'Auto Racing
+    'Baseball
+    'Basketball
+    'Boating and Sailing
+    'Boxing
+    'Cycling
+    'Fishing
+    'Football
+    'Golf
+    'Hockey
+    'Running
+    'Scuba
+    'Skiing and Boarding
+    'Soccer
+    'Swimming
+    'Tennis
+    'Women 's Sports
+    'Cartoons and Comics
+    'Celebrities
+    'Comedy
+    'Daytime Soaps
+    'Talk Radio
+    'Talk Shows
+    'Family Travel
+    'General Travel
+    'International Travel
+Dim BuddyList As Long
+Dim FndBudWin As Long, InsideWin As Long
+Dim Email As Long, NameAdd As Long, ChatWith As Long
+Dim backBut As Long, NextBut As Long, FBBCI As Long, FBBCIwin As Long
+Dim TextBoxz As Long, Moo As String, textset As Long
+Dim BackBut2 As Long, NextBut2 As Long, FindFail As Long
+Dim FindFail2 As Long, FindFail3 As Long, KillNow As Integer
+BuddyList& = FindWindow("_Oscar_BuddyListWin", vbNullString)
+If BuddyList& <> 0& Then
+GoTo Start
+Else
+Exit Sub
+End If
+Start:
+Call RunMenuByString(BuddyList&, "Find a Buddy &Wizard")
+FndBudWin& = FindWindow("#32770", "Find a Buddy")
+InsideWin& = FindWindowEx(FndBudWin&, 0, "#32770", vbNullString)
+Email& = FindWindowEx(InsideWin&, 0, "Button", vbNullString)
+NameAdd& = FindWindowEx(InsideWin&, Email&, "Button", vbNullString)
+ChatWith& = FindWindowEx(InsideWin&, NameAdd&, "Button", vbNullString)
+Call SendMessage(ChatWith&, WM_KEYDOWN, VK_SPACE, 0&)
+Call SendMessage(ChatWith&, WM_KEYUP, VK_SPACE, 0&)
+backBut& = FindWindowEx(FndBudWin&, 0, "Button", vbNullString)
+NextBut& = FindWindowEx(FndBudWin&, backBut&, "Button", vbNullString)
+Call SendMessage(NextBut&, WM_KEYDOWN, VK_SPACE, 0&)
+Call SendMessage(NextBut&, WM_KEYUP, VK_SPACE, 0&)
+FBBCI& = FindWindow("#32770", "Find a Buddy By Common Interest")
+FBBCIwin& = FindWindowEx(FBBCI&, 0, "#32770", vbNullString)
+TextBoxz& = FindWindowEx(FBBCIwin&, 0, "Edit", vbNullString)
+Moo$ = Cbm1.text
+textset& = SendMessageByString(TextBoxz&, WM_SETTEXT, 0, Moo$)
+BackBut2& = FindWindowEx(FBBCI&, 0, "Button", vbNullString)
+NextBut2& = FindWindowEx(FBBCI&, BackBut2&, "Button", vbNullString)
+Call SendMessage(NextBut2&, WM_KEYDOWN, VK_SPACE, 0&)
+Call SendMessage(NextBut2&, WM_KEYUP, VK_SPACE, 0&)
+FindFail& = FindWindow("#32770", "Find a Buddy - Failure")
+FindFail2& = FindWindowEx(FindFail&, 0, "#32770", vbNullString)
+FindFail3& = FindWindowEx(FindFail2&, 0, "Static", vbNullString)
+If FindFail& <> 0& And FindFail2& <> 0& And FindFail3& <> 0& Then
+KillNow% = sendmessagebynum(FindFail&, WM_CLOSE, 0, 0)
+MsgBox "Sorry, no one found in AIM database that likes what you like.", vbExclamation, "Interest search."
+Else
+Exit Sub
+End If
+End Sub
+Sub Aim_FindBy_PersonalInfo(First As String, Middle As String, last As String, Maiden As String, NickName As String, Street As String, city As String, State As String, Country As String, Zip As String)
+'This was taken from digitalaimgold.bas
+Dim BuddyList As Long
+BuddyList& = FindWindow("_Oscar_BuddyListWin", vbNullString)
+If BuddyList& <> 0& Then
+GoTo Start
+Else
+Exit Sub
+End If
+Start:
+Dim FindaBud As Long, FindBud As Long
+Dim Email As Long, NameAdd As Long, Nbut As Long, NextButtin As Long
+Dim Findname As Long, FindNWin As Long, FirstName As Long, Fndwinz As Long
+Dim textset As Long, MiddleName As Long, textset2 As Long, NickNames As Long
+Dim LastName As Long, TextSet3 As Long, Maidens As Long
+Dim TextSet33 As Long, NickName2 As Long, TextSet4 As Long
+Dim StreetName As Long, TextSet5 As Long, CityName As Long
+Dim TextSet6 As Long, StateName As Long, TextSet7 As Long
+Dim CountryName As Long, TextSet8 As Long, ZipCode As Long
+Dim TextSet9 As Long, Findwinz As Long, Nxt As Long, NextButtin2 As Long
+Dim Fails As Long, Fails2 As Long, Fails3 As Long, FindBwin As Long
+Dim NoInfo As Long, NoInfo2 As Long, NoInfo3 As Long
+BuddyList& = FindWindow("_Oscar_BuddyListWin", vbNullString)
+Call RunMenuByString(BuddyList&, "Find a Buddy &Wizard")
+FindaBud& = FindWindow("#32770", "Find a Buddy")
+FindBwin& = FindWindowEx(FindaBud&, 0, "#32770", vbNullString)
+Email& = FindWindowEx(FindBwin&, 0, "Button", vbNullString)
+NameAdd& = FindWindowEx(FindBwin&, Email&, "Button", vbNullString)
+Call SendMessage(NameAdd&, WM_KEYDOWN, VK_SPACE, 0&)
+Call SendMessage(NameAdd&, WM_KEYUP, VK_SPACE, 0&)
+Nbut& = FindWindowEx(FindaBud&, 0, "Button", vbNullString)
+NextButtin& = FindWindowEx(FindaBud&, Nbut&, "Button", vbNullString)
+Call SendMessage(NextButtin&, WM_KEYDOWN, VK_SPACE, 0&)
+Call SendMessage(NextButtin&, WM_KEYUP, VK_SPACE, 0&)
+Findname& = FindWindow("#32770", "Find a Buddy By Name and Address")
+FindNWin& = FindWindowEx(Findname&, 0, "#32770", vbNullString)
+FirstName& = FindWindowEx(FindNWin&, 0, "Edit", vbNullString)
+textset& = SendMessageByString(FirstName&, WM_SETTEXT, 0, First$)
+MiddleName& = FindWindowEx(FindNWin&, FirstName&, "Edit", vbNullString)
+textset2& = SendMessageByString(MiddleName&, WM_SETTEXT, 0, Middle$)
+LastName& = FindWindowEx(FindNWin&, MiddleName&, "Edit", vbNullString)
+TextSet3& = SendMessageByString(LastName&, WM_SETTEXT, 0, last$)
+Maidens& = FindWindowEx(FindNWin&, LastName&, "Edit", vbNullString)
+TextSet33& = SendMessageByString(Maidens&, WM_SETTEXT, 0, Maiden$)
+NickNames& = FindWindowEx(FindNWin&, Maidens&, "Edit", vbNullString)
+TextSet4& = SendMessageByString(NickNames&, WM_SETTEXT, 0, NickName$)
+StreetName& = FindWindowEx(FindNWin&, NickNames&, "Edit", vbNullString)
+TextSet5& = SendMessageByString(StreetName&, WM_SETTEXT, 0, Street$)
+CityName& = FindWindowEx(FindNWin&, StreetName&, "Edit", vbNullString)
+TextSet6& = SendMessageByString(CityName&, WM_SETTEXT, 0, city$)
+StateName& = FindWindowEx(FindNWin&, CityName&, "Edit", vbNullString)
+TextSet7& = SendMessageByString(StateName&, WM_SETTEXT, 0, State$)
+CountryName& = FindWindowEx(FindNWin&, StateName&, "Edit", vbNullString)
+TextSet8& = SendMessageByString(CountryName&, WM_SETTEXT, 0, Country$)
+ZipCode& = FindWindowEx(FindNWin&, CountryName&, "Edit", vbNullString)
+TextSet9& = SendMessageByString(ZipCode&, WM_SETTEXT, 0, Zip$)
+Fndwinz& = FindWindow("#32770", "Find a Buddy By Name and Address")
+Nxt& = FindWindowEx(Fndwinz&, 0, "Button", vbNullString)
+NextButtin2& = FindWindowEx(Fndwinz&, Nxt&, "Button", vbNullString)
+Call SendMessage(NextButtin2&, WM_KEYDOWN, VK_SPACE, 0&)
+Call SendMessage(NextButtin2&, WM_KEYUP, VK_SPACE, 0&)
+NoInfo& = FindWindow("#32770", "Find a Buddy - Need More Information")
+NoInfo2& = FindWindowEx(NoInfo&, 0, "#32770", vbNullString)
+NoInfo3& = FindWindowEx(NoInfo2&, 0, "Static", vbNullString)
+If NoInfo& And NoInfo2& And NoInfo3& <> 0& Then
+Call PostMessage(NoInfo&, WM_CLOSE, 0&, 0&)
+MsgBox "Please fill in all the boxes to complet the search.", vbExclamation, "More info needed."
+Exit Sub
+End If
+Fails& = FindWindow("#32770", "Find a Buddy - Failure")
+Fails2& = FindWindowEx(Fails&, 0, "#32770", vbNullString)
+Fails3& = FindWindowEx(Fails2&, 0, "Static", vbNullString)
+If Fails& And Fails2& And Fails3& <> 0& Then
+Call PostMessage(Fails&, WM_CLOSE, 0&, 0&)
+MsgBox "No one found in AIM database that matches the info you provided.", vbExclamation, "Name and address not found."
+Else
+Exit Sub
+End If
+End Sub
+Sub Aim_FindBy_Wizard()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "Find a Buddy &Wizard...")
+End Sub
+Sub Aim_Main_Help()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "&Help Topics...")
+End Sub
+Sub Aim_Main_Version()
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+Call RunMenuByString(oscarbuddylistwin&, "&About")
+End Sub
+Sub Aim_Main_Maximize()
+Dim maximizeim&
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+maximizeim& = ShowWindow(oscarbuddylistwin&, SW_MAXIMIZE)
+End Sub
+Sub Aim_Main_Minimize()
+Dim minimizeim&
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+minimizeim& = ShowWindow(oscarbuddylistwin&, SW_MINIMIZE)
+End Sub
+Sub Aim_Main_Restore()
+Dim restoreim&
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+restoreim& = ShowWindow(oscarbuddylistwin&, SW_RESTORE)
+End Sub
+Sub Aim_Main_Hide()
+Dim hideim&
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+hideim& = ShowWindow(oscarbuddylistwin&, SW_HIDE)
+End Sub
+Sub Aim_Main_Hide_Ad()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim wndateclass&
+Dim ateclass&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+wndateclass& = FindWindowEx(oscarbuddylistwin&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+hideim& = ShowWindow(ateclass&, SW_HIDE)
+End Sub
+Sub Aim_Main_Hide_BuddyList()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscartabgroup&
+Dim oscartree&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscartabgroup& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_tabgroup", vbNullString)
+oscartree& = FindWindowEx(oscartabgroup&, 0&, "_oscar_tree", vbNullString)
+hideim& = ShowWindow(oscartree&, SW_HIDE)
+End Sub
+Sub Aim_Main_Hide_ImButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscartabgroup&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscartabgroup& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_tabgroup", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, 0&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Main_Hide_InviteButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscartabgroup&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscartabgroup& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_tabgroup", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, 0&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Main_Hide_TalkButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscartabgroup&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscartabgroup& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_tabgroup", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Main_Hide_WWWButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Main_Hide_StockBar()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim wndateclass&
+Dim ateclass&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+wndateclass& = FindWindowEx(oscarbuddylistwin&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(oscarbuddylistwin&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(oscarbuddylistwin&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+hideim& = ShowWindow(ateclass&, SW_HIDE)
+End Sub
+Sub Aim_Main_Hide_StockButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Main_Show()
+Dim hideim&
+Dim oscarbuddylistwin&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+hideim& = ShowWindow(oscarbuddylistwin&, SW_SHOW)
+End Sub
+Sub Aim_Main_Show_Ad()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim wndateclass&
+Dim ateclass&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+wndateclass& = FindWindowEx(oscarbuddylistwin&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+hideim& = ShowWindow(ateclass&, SW_SHOW)
+End Sub
+Sub Aim_Main_Show_BuddyList()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscartabgroup&
+Dim oscartree&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscartabgroup& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_tabgroup", vbNullString)
+oscartree& = FindWindowEx(oscartabgroup&, 0&, "_oscar_tree", vbNullString)
+hideim& = ShowWindow(oscartree&, SW_SHOW)
+End Sub
+Sub Aim_Main_Show_ImButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscartabgroup&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscartabgroup& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_tabgroup", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, 0&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Main_Show_InviteButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscartabgroup&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscartabgroup& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_tabgroup", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, 0&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Main_Show_TalkButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscartabgroup&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscartabgroup& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_tabgroup", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Main_Show_WWWButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Main_Show_StockBar()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim wndateclass&
+Dim ateclass&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+wndateclass& = FindWindowEx(oscarbuddylistwin&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(oscarbuddylistwin&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(oscarbuddylistwin&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+hideim& = ShowWindow(ateclass&, SW_SHOW)
+End Sub
+Sub Aim_Main_Show_StockButton()
+Dim hideim&
+Dim oscarbuddylistwin&
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+hideim& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Im_Send_ToOpenIm(TheMessage$)
+'This sends to the open Im.
+Dim sendbuttonicon1&
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+Dim aimimessage2&
+Dim oscariconbtn&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, TheMessage$)
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Im_Send_ToOpenIm2(TheMessage$)
+'This sends to the open Im then closes.
+Dim aimimessage2&
+Dim oscariconbtn&
+Dim aimimessage3&
+Dim sendbuttonicon1&
+Dim aimimessage&
+Dim wndateclass&
+Dim ateclass&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimimessage&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, TheMessage$)
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+oscariconbtn& = FindWindowEx(aimimessage&, 0&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+aimimessage3& = FindWindow("aim_imessage", vbNullString)
+Call ShowWindow(aimimessage&, SW_HIDE)
+End Sub
+Sub Aim_Main_Load()
+Call Computer_Open_Exe("C:\Program Files\AIM95\aim.exe")
+End Sub
+Sub Aim_Main_ChangeCaption(TheNewCap$)
+Dim oscarbuddylistwin&
+Dim setcaption&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+setcaption& = SendMessageByString(oscarbuddylistwin&, WM_SETTEXT, 0, TheNewCap$)
+End Sub
+Sub Aim_Im_ChangeCaption(TheNewCap$)
+Dim setcaption&
+Dim aimimessage&
+aimimessage& = FindWindow("aim_imessage", vbNullString)
+setcaption& = SendMessageByString(aimimessage&, WM_SETTEXT, 0, TheNewCap$)
+End Sub
+Sub Aim_Chat_ToList(lis As ListBox)
+'This is from digitalaimgold.bas
+Dim ChatRoom As Long, LopGet, MooLoo, Moo2
+Dim Name As String, NameLen, buffer As String
+Dim TabPos, NameText As String, text As String
+Dim mooz, Well As Integer, BuddyTree As Long
+ChatRoom& = FindWindow("AIM_ChatWnd", vbNullString)
+If ChatRoom& <> 0 Then
+Do
+BuddyTree& = FindWindowEx(ChatRoom&, 0, "_Oscar_Tree", vbNullString)
+Loop Until BuddyTree& <> 0
+LopGet = SendMessage(BuddyTree&, LB_GETCOUNT, 0, 0)
+For MooLoo = 0 To LopGet - 1
+Call SendMessageByString(BuddyTree&, LB_SETCURSEL, MooLoo, 0)
+NameLen = SendMessage(BuddyTree&, LB_GETTEXTLEN, MooLoo, 0)
+buffer$ = String$(NameLen, 0)
+Moo2 = SendMessageByString(BuddyTree&, LB_GETTEXT, MooLoo, buffer$)
+TabPos = InStr(buffer$, Chr$(9))
+NameText$ = Right$(buffer$, (Len(buffer$) - (TabPos)))
+TabPos = InStr(NameText$, Chr$(9))
+text$ = Right$(NameText$, (Len(NameText$) - (TabPos)))
+Name$ = text$
+For mooz = 0 To lis.ListCount - 1
+If Name$ = lis.List(mooz) Then
+Well% = 123
+GoTo Endz
+End If
+Next mooz
+If Well% <> 123 Then
+lis.AddItem Name$
+Else
+End If
+Endz:
+Next MooLoo
+End If
+End Sub
+Sub Aim_Chat_Invite_Quick(TheRoom$)
+Dim oscarbuddylistwin&
+Dim sendbuttonicon1&
+Dim editx&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+editx& = FindWindowEx(oscarbuddylistwin&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, "aim:gochat?roomname=" + TheRoom$ + "")
+Dim oscariconbtn&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscariconbtn& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, "*Search the Web*")
+End Sub
+Sub Aim_Im_Send_Manipulator(ThePersonToSendTo$, TheNormalMessage$, ThePerson$, PersonsMessage$)
+'This will manipulate someone.
+Call Aim_Im_Send_Normal(ThePersonToSendTo$, "" + TheNormalMessage$ + "<HTML><BODY BGCOLOR=" + Chr(34) + "#ffffff" + Chr(34) + "><BR><BODY BGCOLOR=" + Chr(34) + "#ffffff" + Chr(34) + "><B><FONT SIZE=" + Chr(34) + "3" + Chr(34) + "><FONT COLOR=" + Chr(34) + "#ff0000" + Chr(34) + ">" + ThePerson$ + "</B></FONT><FONT COLOR=" + Chr(34) + "#ff0000" + Chr(34) + ">:</FONT><FONT COLOR=" + Chr(34) + "#000000" + Chr(34) + "> <B></FONT><FONT COLOR=" + Chr(34) + "#0000ff" + Chr(34) + ">" + PersonsMessage$ + "</B></FONT></BODY></HTML>")
+End Sub
+Sub Aim_Im_Send_Manipulator2(ThePersonToSendTo$, TheNormalMessage$, ThePerson$, PersonsMessage$)
+'This will manipulate someone then close.
+Call Aim_Im_Send_Normal2(ThePersonToSendTo$, "" + TheNormalMessage$ + "<HTML><BODY BGCOLOR=" + Chr(34) + "#ffffff" + Chr(34) + "><BR><BODY BGCOLOR=" + Chr(34) + "#ffffff" + Chr(34) + "><B><FONT SIZE=" + Chr(34) + "3" + Chr(34) + "><FONT COLOR=" + Chr(34) + "#ff0000" + Chr(34) + ">" + ThePerson$ + "</B></FONT><FONT COLOR=" + Chr(34) + "#ff0000" + Chr(34) + ">:</FONT><FONT COLOR=" + Chr(34) + "#000000" + Chr(34) + "> <B></FONT><FONT COLOR=" + Chr(34) + "#0000ff" + Chr(34) + ">" + PersonsMessage$ + "</B></FONT></BODY></HTML>")
+End Sub
+Sub Aim_Chat_Invite_Normal(ThePeople$, TheMessage$, TheRoom$)
+Dim oscarbuddylistwin&
+Dim sendbuttonicon1&
+Dim oscartabgroup&
+Dim oscariconbtn&
+Dim aimchatinvitesendwnd&
+Dim editx&
+Dim aimchatinvitesendwnd2&
+Dim editx2&
+Dim aimchatinvitesendwnd3&
+Dim aimchatinvitesendwn&
+Dim oscariconbt&
+Dim sendbuttonicon2&
+Dim editx3&
+oscarbuddylistwin& = FindWindow("_oscar_buddylistwin", vbNullString)
+oscartabgroup& = FindWindowEx(oscarbuddylistwin&, 0&, "_oscar_tabgroup", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(oscartabgroup&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+aimchatinvitesendwnd& = FindWindow("aim_chatinvitesendwnd", vbNullString)
+editx& = FindWindowEx(aimchatinvitesendwnd&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, ThePeople$)
+aimchatinvitesendwnd2& = FindWindow("aim_chatinvitesendwnd", vbNullString)
+editx2& = FindWindowEx(aimchatinvitesendwnd2&, 0&, "edit", vbNullString)
+editx2& = FindWindowEx(aimchatinvitesendwnd2&, editx2&, "edit", vbNullString)
+Call SendMessageByString(editx2&, WM_SETTEXT, 0&, TheMessage$)
+aimchatinvitesendwnd3& = FindWindow("aim_chatinvitesendwnd", vbNullString)
+editx3& = FindWindowEx(aimchatinvitesendwnd3&, 0&, "edit", vbNullString)
+editx3& = FindWindowEx(aimchatinvitesendwnd3&, editx3&, "edit", vbNullString)
+editx3& = FindWindowEx(aimchatinvitesendwnd3&, editx3&, "edit", vbNullString)
+Call SendMessageByString(editx3&, WM_SETTEXT, 0&, TheRoom$)
+aimchatinvitesendwn& = FindWindow("aim_chatinvitesendwnd", vbNullString)
+oscariconbt& = FindWindowEx(aimchatinvitesendwn&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbt& = FindWindowEx(aimchatinvitesendwn&, oscariconbt&, "_oscar_iconbtn", vbNullString)
+oscariconbt& = FindWindowEx(aimchatinvitesendwn&, oscariconbt&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon2& = SendMessage(oscariconbt&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon2& = SendMessage(oscariconbt&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Chat_Invite_PersonInCurrentRoom(ThePeople$, TheMessage$)
+Dim aimchatwnd&
+Dim aimchatinvitesendwnd&
+Dim editx&
+Dim aimchatinvitesendwnd2&
+Dim editx2&
+Dim aimchatinvitesendwn&
+Dim oscariconbt&
+Dim sendbuttonicon2&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Call RunMenuByString(aimchatwnd&, "&Invite a Buddy...")
+aimchatinvitesendwnd& = FindWindow("aim_chatinvitesendwnd", vbNullString)
+editx& = FindWindowEx(aimchatinvitesendwnd&, 0&, "edit", vbNullString)
+Call SendMessageByString(editx&, WM_SETTEXT, 0&, ThePeople$)
+aimchatinvitesendwnd2& = FindWindow("aim_chatinvitesendwnd", vbNullString)
+editx2& = FindWindowEx(aimchatinvitesendwnd2&, 0&, "edit", vbNullString)
+editx2& = FindWindowEx(aimchatinvitesendwnd2&, editx2&, "edit", vbNullString)
+Call SendMessageByString(editx2&, WM_SETTEXT, 0&, TheMessage$)
+aimchatinvitesendwn& = FindWindow("aim_chatinvitesendwnd", vbNullString)
+oscariconbt& = FindWindowEx(aimchatinvitesendwn&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbt& = FindWindowEx(aimchatinvitesendwn&, oscariconbt&, "_oscar_iconbtn", vbNullString)
+oscariconbt& = FindWindowEx(aimchatinvitesendwn&, oscariconbt&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon2& = SendMessage(oscariconbt&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon2& = SendMessage(oscariconbt&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Form_Minimize(Frm As Form)
+Frm.WindowState = 1
+End Sub
+Sub Form_Maximize(Frm As Form)
+Frm.WindowState = 2
+End Sub
+Sub Form_Exit_Normal()
+End
+End Sub
+Sub Form_Exit_Cool(m As Form)
+'This is from movin.bas
+m.Left = 5
+Pause (0.1)
+m.Left = 400
+Pause (0.1)
+m.Left = 700
+Pause (0.1)
+m.Left = 1000
+Pause (0.1)
+m.Left = 2000
+Pause (0.1)
+m.Left = 3000
+Pause (0.1)
+m.Left = 4000
+Pause (0.1)
+m.Left = 5000
+Pause (0.1)
+m.Left = 4000
+Pause (0.1)
+m.Left = 3000
+Pause (0.1)
+m.Left = 2000
+Pause (0.1)
+m.Left = 1000
+Pause (0.1)
+m.Left = 700
+Pause (0.1)
+m.Left = 400
+Pause (0.1)
+m.Left = 5
+Pause (0.1)
+m.Left = 400
+Pause (0.1)
+m.Left = 700
+Pause (0.1)
+m.Left = 1000
+Pause (0.1)
+m.Left = 2000
+End
+End Sub
+Sub Form_Exit_Down(Frm As Form)
+Do
+Frm.Top = Trim(Str(Int(Frm.Top) + 300))
+DoEvents
+Loop Until Frm.Top > 7200
+End Sub
+Sub Form_Exit_Left(Frm As Form)
+Do
+Frm.Left = Trim(Str(Int(Frm.Left) - 300))
+DoEvents
+Loop Until Frm.Left < -6300
+If Frm.Left < -6300 Then End
+End Sub
+Sub Form_Exit_Right(Frm As Form)
+Do
+Frm.Left = Trim(Str(Int(Frm.Left) + 300))
+DoEvents
+Loop Until Frm.Left > 9600
+If Frm.Left > 9600 Then End
+End Sub
+Sub Form_Exit_Up(Frm As Form)
+Do
+Frm.Top = Trim(Str(Int(Frm.Top) - 300))
+DoEvents
+Loop Until Frm.Top < -4500
+If Frm.Top < -4500 Then End
+End Sub
+Sub Aim_Chat_Help()
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Call RunMenuByString(aimchatwnd&, "&Help")
+End Sub
+Sub Aim_Chat_TimeStampsOnOff()
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Call RunMenuByString(aimchatwnd&, "&Timestamp")
+End Sub
+Sub Aim_Chat_EditPreferences()
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Call RunMenuByString(aimchatwnd&, "&Edit Chat Preferences...")
+End Sub
+Sub Aim_Chat_RoomInfo()
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Call RunMenuByString(aimchatwnd&, "&Chat Room Info...")
+End Sub
+Sub Aim_Chat_Save()
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Call RunMenuByString(aimchatwnd&, "&Save...")
+End Sub
+Sub Aim_Chat_Close()
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Call RunMenuByString(aimchatwnd&, "&Close...")
+End Sub
+Sub Aim_Chat_Print()
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Call RunMenuByString(aimchatwnd&, "&Print...")
+End Sub
+Sub Aim_Chat_Minimize()
+Dim Chat&
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Chat& = ShowWindow(aimchatwnd&, SW_MINIMIZE)
+End Sub
+Sub Aim_Chat_Maximize()
+Dim Chat&
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Chat& = ShowWindow(aimchatwnd&, SW_MAXIMIZE)
+End Sub
+Sub Aim_Chat_Hide_Chat()
+Dim Chat&
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Chat& = ShowWindow(aimchatwnd&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Show()
+Dim Chat&
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Chat& = ShowWindow(aimchatwnd&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Restore()
+Dim Chat&
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Chat& = ShowWindow(aimchatwnd&, SW_RESTORE)
+End Sub
+Sub Aim_Chat_Hide_Ad1()
+Dim button&
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+button& = ShowWindow(ateclass&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Hide_Ad2()
+Dim button&
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+button& = ShowWindow(ateclass&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Hide_Ad3()
+Dim button&
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+button& = ShowWindow(ateclass&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Hide_ImButton()
+Dim button&
+Dim aimchatwnd&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+button& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Hide_IgnoreButton()
+Dim button&
+Dim aimchatwnd&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+button& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Hide_TalkButton()
+Dim button&
+Dim aimchatwnd&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+button& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Hide_InfoButton()
+Dim button&
+Dim aimchatwnd&
+Dim wndateclass&
+Dim cbclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+cbclass& = FindWindowEx(wndateclass&, 0&, "cbclass", vbNullString)
+button& = ShowWindow(cbclass&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Hide_RateMeter()
+Dim button&
+Dim aimchatwnd&
+Dim oscarratemeter&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscarratemeter& = FindWindowEx(aimchatwnd&, 0&, "_oscar_ratemeter", vbNullString)
+button& = ShowWindow(oscarratemeter&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Hide_ChatRoomButton()
+Dim button&
+Dim aimchatwnd&
+Dim button1&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+button1& = FindWindowEx(aimchatwnd&, 0&, "button", vbNullString)
+button& = ShowWindow(button1&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Hide_SendButton()
+Dim button&
+Dim aimchatwnd&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+button& = ShowWindow(oscariconbtn&, SW_HIDE)
+End Sub
+Sub Aim_Chat_Show_Ad1()
+Dim button&
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+button& = ShowWindow(ateclass&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Show_Ad2()
+Dim button&
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+button& = ShowWindow(ateclass&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Show_Ad3()
+Dim button&
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+button& = ShowWindow(ateclass&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Show_ImButton()
+Dim button&
+Dim aimchatwnd&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+button& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Show_IgnoreButton()
+Dim button&
+Dim aimchatwnd&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+button& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Show_TalkButton()
+Dim button&
+Dim aimchatwnd&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+button& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Show_InfoButton()
+Dim button&
+Dim aimchatwnd&
+Dim wndateclass&
+Dim cbclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+cbclass& = FindWindowEx(wndateclass&, 0&, "cbclass", vbNullString)
+button& = ShowWindow(cbclass&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Show_RateMeter()
+Dim button&
+Dim aimchatwnd&
+Dim oscarratemeter&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscarratemeter& = FindWindowEx(aimchatwnd&, 0&, "_oscar_ratemeter", vbNullString)
+button& = ShowWindow(oscarratemeter&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Show_ChatRoomButton()
+Dim button&
+Dim aimchatwnd&
+Dim button1&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+button1& = FindWindowEx(aimchatwnd&, 0&, "button", vbNullString)
+button& = ShowWindow(button1&, SW_SHOW)
+End Sub
+Sub Aim_Chat_Show_SendButton()
+Dim button&
+Dim aimchatwnd&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+button& = ShowWindow(oscariconbtn&, SW_SHOW)
+End Sub
+
+Sub Aim_Chat_Click_ImButton()
+Dim button&
+Dim aimchatwnd&
+Dim sendbuttonicon1&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Chat_Click_IgnoreButton()
+Dim button&
+Dim aimchatwnd&
+Dim sendbuttonicon1&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Chat_Click_TalkButton()
+Dim button&
+Dim aimchatwnd&
+Dim oscariconbtn&
+Dim sendbuttonicon1&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Chat_Click_InfoButton()
+Dim button&
+Dim aimchatwnd&
+Dim wndateclass&
+Dim sendbuttonicon1&
+Dim cbclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+cbclass& = FindWindowEx(wndateclass&, 0&, "cbclass", vbNullString)
+sendbuttonicon1& = SendMessage(cbclass&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(cbclass&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Chat_Click_ChatRoomButton()
+Dim sendbuttonicon1&
+Dim button&
+Dim aimchatwnd&
+Dim button1&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+button1& = FindWindowEx(aimchatwnd&, 0&, "button", vbNullString)
+sendbuttonicon1& = SendMessage(button1&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(button1&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Chat_Click_Send()
+Dim button&
+Dim sendbuttonicon1&
+Dim aimchatwnd&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Function Aim_Chat_FindMe()
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+End Function
+Sub Aim_Chat_Send_Normal(TheMessage$)
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+Dim sendbuttonicon1&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, TheMessage$)
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Chat_Send_Link(TheUrl$, TheLinkText$)
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+Dim sendbuttonicon1&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, "<a href=""" + TheUrl$ + """>" + TheLinkText$ + "")
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Chat_Send_Manipulator(TheNormalMessage$, ThePerson$, PersonsMessage$)
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+Dim sendbuttonicon1&
+Dim oscariconbtn&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, wndateclass&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, "" + TheNormalMessage$ + "<HTML><BODY BGCOLOR=" + Chr(34) + "#ffffff" + Chr(34) + "><BR><BODY BGCOLOR=" + Chr(34) + "#ffffff" + Chr(34) + "><B><FONT SIZE=" + Chr(34) + "3" + Chr(34) + "><FONT COLOR=" + Chr(34) + "#ff0000" + Chr(34) + ">" + ThePerson$ + "</B></FONT><FONT COLOR=" + Chr(34) + "#ff0000" + Chr(34) + ">:</FONT><FONT COLOR=" + Chr(34) + "#000000" + Chr(34) + "> <B></FONT><FONT COLOR=" + Chr(34) + "#0000ff" + Chr(34) + ">" + PersonsMessage$ + "</B></FONT></BODY></HTML>")
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, 0&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+oscariconbtn& = FindWindowEx(aimchatwnd&, oscariconbtn&, "_oscar_iconbtn", vbNullString)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONDOWN, 0, 0&)
+sendbuttonicon1& = SendMessage(oscariconbtn&, WM_LBUTTONUP, 0, 0&)
+End Sub
+Sub Aim_Chat_ChangeCaption(TheNewCaption$)
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+Call SendMessageByString(aimchatwnd&, WM_SETTEXT, 0&, TheNewCaption$)
+End Sub
+Sub Aim_Chat_ToCombo(Cmb As ComboBox)
+Dim ChatRoom As Long, LopGet, MooLoo, Moo2
+Dim Name As String, NameLen, buffer As String
+Dim TabPos, NameText As String, text As String
+Dim mooz, Well As Integer, BuddyTree As Long
+ChatRoom& = FindWindow("AIM_ChatWnd", vbNullString)
+If ChatRoom& <> 0 Then
+Do
+BuddyTree& = FindWindowEx(ChatRoom&, 0, "_Oscar_Tree", vbNullString)
+Loop Until BuddyTree& <> 0
+LopGet = SendMessage(BuddyTree&, LB_GETCOUNT, 0, 0)
+For MooLoo = 0 To LopGet - 1
+Call SendMessageByString(BuddyTree&, LB_SETCURSEL, MooLoo, 0)
+NameLen = SendMessage(BuddyTree&, LB_GETTEXTLEN, MooLoo, 0)
+buffer$ = String$(NameLen, 0)
+Moo2 = SendMessageByString(BuddyTree&, LB_GETTEXT, MooLoo, buffer$)
+TabPos = InStr(buffer$, Chr$(9))
+NameText$ = Right$(buffer$, (Len(buffer$) - (TabPos)))
+TabPos = InStr(NameText$, Chr$(9))
+text$ = Right$(NameText$, (Len(NameText$) - (TabPos)))
+Name$ = text$
+For mooz = 0 To Cmb.ListCount - 1
+If Name$ = Cmb.List(mooz) Then
+Well% = 123
+GoTo Endz
+End If
+Next mooz
+If Well% <> 123 Then
+Cmb.AddItem Name$
+Else
+End If
+Endz:
+Next MooLoo
+End If
+End Sub
+Sub Aim_Chat_Send_Attention(TheMessage$)
+Call Aim_Chat_Send_Normal("A T T E N T I O N")
+Call Aim_Chat_Send_Normal(TheMessage$)
+Call Aim_Chat_Send_Normal("A T T E N T I O N")
+End Sub
+Sub Aim_Chat_Clear()
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, "")
+End Sub
+Sub Aim_Chat_Anti_Punt()
+Dim getthetext$
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+getthetext$ = Get_Text(ateclass&)
+If InStr(getthetext$, "Punt") Or InStr(getthetext$, "punt") Then
+Call SendMessageByString(ateclass&, WM_SETTEXT, 0&, "")
+End If
+End Sub
+Function Aim_Chat_Get_RoomName() As String
+'This get the name of the person your talking to.
+Dim aimchatwnd&
+Dim aimgetcaption$
+Dim aimchangetext$
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+aimgetcaption$ = Get_Caption(aimchatwnd&)
+aimchangetext$ = ReplaceString(aimgetcaption$, "Chat Room: ", "")
+Aim_Chat_Get_RoomName = aimchangetext$
+End Function
+Function Aim_Chat_Get_Text()
+'Gets text from the chatroom.
+Dim aimimessage2$
+Dim aimchatwnd&
+Dim wndateclass&
+Dim ateclass&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+wndateclass& = FindWindowEx(aimchatwnd&, 0&, "wndate32class", vbNullString)
+ateclass& = FindWindowEx(wndateclass&, 0&, "ate32class", vbNullString)
+aimimessage2$ = Get_Text(ateclass&)
+Aim_Chat_Get_Text = aimimessage2$
+End Function
+Function Aim_Chat_Get_Text2() As String
+Dim ChatWindow As Long, BorderThing As Long, getit As String
+Dim clear As String
+ChatWindow& = FindWindow("AIM_ChatWnd", vbNullString)
+BorderThing& = FindWindowEx(ChatWindow&, 0&, "WndAte32Class", vbNullString)
+getit$ = Get_Text(BorderThing&)
+clear$ = HTML_Remove(getit$)
+Aim_Chat_Get_Text2 = clear$
+End Function
+Sub Computer_Open_Exe(TheExE$)
+Shell (TheExE$)
+End Sub
+
+Sub Computer_MakeDir(TheDiR$)
+MkDir (TheDiR$)
+End Sub
+
+Sub Computer_DeleteDir(TheDiR$)
+RmDir (TheDiR$)
+End Sub
+Sub Computer_Close_CdRom()
+Dim closecd$
+closecd$ = MciSendString("set CDAudio door closed", vbNullString, 0, 0)
+End Sub
+Sub Computer_Open_CdRom()
+Dim opencd$
+opencd$ = MciSendString("set CDAudio door open", vbNullString, 0, 0)
+End Sub
+Sub Computer_Show_Mouse()
+Dim showmouse$
+showmouse$ = ShowCursor(True)
+End Sub
+Sub Computer_Show_StartMenu()
+Dim findstartmenu&
+Dim shownow&
+findstartmenu& = FindWindow("Shell_TrayWnd", vbNullString)
+shownow& = ShowWindow(findstartmenu&, SW_SHOW)
+End Sub
+Sub Computer_Hide_Mouse()
+Dim hidemouse$
+hidemouse$ = ShowCursor(False)
+End Sub
+Sub Computer_Hide_Startmenu()
+Dim findstartmenu&
+Dim hidenow&
+findstartmenu& = FindWindow("Shell_TrayWnd", vbNullString)
+hidenow& = ShowWindow(findstartmenu&, SW_HIDE)
+End Sub
+Sub Computer_Shutdown()
+Dim Shutdown$
+Shutdown$ = ExitWindowsEx(EWX_SHUTDOWN, 0&)
+End Sub
+Sub Computer_Restart()
+Dim Restart$
+Restart$ = ExitWindowsEx(EWX_REBOOT, 0&)
+End Sub
+Sub Computer_ForceShutdown()
+Dim Force$
+Force$ = ExitWindowsEx(EWX_FORCE, 0&)
+End Sub
+Sub Computer_LogOff()
+Dim LogOff$
+LogOff$ = ExitWindowsEx(EWX_LOGOFF, 0&)
+End Sub
+Sub Aim_Chat_AppendMenu(TheMessage$)
+Dim aimimsubmenu$
+Dim aimimappendmenu$
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+aimimsubmenu$ = GetMenu(aimchatwnd&)
+aimimsubmenu$ = GetSubMenu(aimimsubmenu$, 0)
+aimimappendmenu$ = AppendMenu(aimimsubmenu$, MF_STRING, 5, TheMessage$)
+End Sub
+Sub Aim_Chat_AppendGrayMenu(TheMessage$)
+Dim aimimsubmenu$
+Dim aimimappendmenu$
+Dim aimchatwnd&
+aimchatwnd& = FindWindow("aim_chatwnd", vbNullString)
+aimimsubmenu$ = GetMenu(aimchatwnd&)
+aimimsubmenu$ = GetSubMenu(aimimsubmenu$, 0)
+aimimappendmenu$ = AppendMenu(aimimsubmenu$, MF_GRAYED, 5, TheMessage$)
+End Sub
+Sub List_AddItem(Lst As ListBox, TheItem$)
+Lst.AddItem (TheItem$)
+End Sub
+Sub List_Clear(Lst As ListBox)
+Lst.clear
+End Sub
+Sub Combo_AddItem(cmbo As ComboBox, TheItem$)
+cmbo.AddItem (TheItem$)
+End Sub
+Sub Combo_Clear(cmbo As ComboBox)
+cmbo.clear
+End Sub
+Sub Form_Move(Frm As Form)
+'Example:  In a label's mousedown event put this code
+'Call FormMove(me)
+Dim dragme&
+ReleaseCapture
+dragme& = SendMessage(Frm.hwnd, &H112, &HF012, 0)
+End Sub
+Sub Form_Fade_Blue(Frm As Object)
+'This was taken from gumboaim.bas
+    On Error Resume Next
+    Dim intLoop As Integer
+    Frm.DrawStyle = vbInsideSolid
+    Frm.DrawMode = vbCopyPen
+    Frm.ScaleMode = vbPixels
+    Frm.DrawWidth = 2
+    Frm.ScaleHeight = 256
+    For intLoop = 0 To 255
+    Frm.Line (0, intLoop)-(Screen.Width, intLoop - 1), RGB(0, 0, 255 - intLoop), B
+    Next intLoop
+End Sub
+Sub Form_Fade_Green(Frm As Object)
+'This was taken from gumboaim.bas
+    On Error Resume Next
+    Dim intLoop As Integer
+    Frm.DrawStyle = vbInsideSolid
+    Frm.DrawMode = vbCopyPen
+    Frm.ScaleMode = vbPixels
+    Frm.DrawWidth = 2
+    Frm.ScaleHeight = 256
+    For intLoop = 0 To 255
+    Frm.Line (0, intLoop)-(Screen.Width, intLoop - 1), RGB(0, 255 - intLoop, 0), B
+    Next intLoop
+End Sub
+Sub Form_Fade_Red(Frm As Object)
+'This was taken from gumboaim.bas
+    On Error Resume Next
+    Dim intLoop As Integer
+    Frm.DrawStyle = vbInsideSolid
+    Frm.DrawMode = vbCopyPen
+    Frm.ScaleMode = vbPixels
+    Frm.DrawWidth = 2
+    Frm.ScaleHeight = 256
+    For intLoop = 0 To 255
+    Frm.Line (0, intLoop)-(Screen.Width, intLoop - 1), RGB(255 - intLoop, 0, 0), B
+    Next intLoop
+End Sub
+Sub Form_Fade_Fire(Frm As Object)
+'This was taken from gumboaim.bas
+    On Error Resume Next
+    Dim intLoop As Integer
+    Frm.DrawStyle = vbInsideSolid
+    Frm.DrawMode = vbCopyPen
+    Frm.ScaleMode = vbPixels
+    Frm.DrawWidth = 2
+    Frm.ScaleHeight = 256
+    For intLoop = 0 To 255
+    Frm.Line (0, intLoop)-(Screen.Width, intLoop - 1), RGB(255, 255 - intLoop, 0), B
+    Next intLoop
+End Sub
+Sub Form_Fade_Silver(Frm As Object)
+'This was taken from gumboaim.bas
+    On Error Resume Next
+    Dim intLoop As Integer
+    Frm.DrawStyle = vbInsideSolid
+    Frm.DrawMode = vbCopyPen
+    Frm.ScaleMode = vbPixels
+    Frm.DrawWidth = 2
+    Frm.ScaleHeight = 256
+    For intLoop = 0 To 255
+    Frm.Line (0, intLoop)-(Screen.Width, intLoop - 1), RGB(255 - intLoop, 255 - intLoop, 255 - intLoop), B
+    Next intLoop
+End Sub
+Sub Form_Fade_Ice(Frm As Object)
+'This was taken from gumboaim.bas
+    On Error Resume Next
+    Dim intLoop As Integer
+    Frm.DrawStyle = vbInsideSolid
+    Frm.DrawMode = vbCopyPen
+    Frm.ScaleMode = vbPixels
+    Frm.DrawWidth = 2
+    Frm.ScaleHeight = 256
+    For intLoop = 0 To 255
+    Frm.Line (0, intLoop)-(Screen.Width, intLoop - 1), RGB(0, 255 - intLoop, 255), B
+    Next intLoop
+End Sub
+Function Get_Time()
+Get_Time = Time
+End Function
+Function Get_Date()
+Get_Date = Date
+End Function
+Sub Computer_PlayWav(TheWav$)
+Dim wav&
+wav& = sndPlaySound(TheWav$, 1):
+End Sub
